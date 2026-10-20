@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eco-Clasificador Frutiger Aero</title>
+</head>
+<body bgcolor="#00bcd4" text="#ffffff">
+
+    <!-- TABLERO PRINCIPAL FRUTIGER AERO -->
+    <table width="400" height="600" border="3" bordercolor="#ffffff" bgcolor="#4fc3f7" align="center" cellpadding="10" cellspacing="0" style="border-radius: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+        
+        <!-- ENCABEZADO Y HUD -->
+        <tr>
+            <td height="50" bgcolor="#ffffff" style="border-radius: 20px 20px 0px 0px;">
+                <font color="#006064" face="sans-serif" size="4">
+                    <b>Puntos: <span id="score">0</span></b> (Meta: 100)
+                </font>
+                <div align="right" style="margin-top: -20px;">
+                    <font color="#006064" face="sans-serif" size="4">
+                        <b>Tiempo: <span id="timer">60</span>s</b>
+                    </font>
+                </div>
+            </td>
+        </tr>
+
+        <!-- PANTALLA DE INICIO (MENU INTERACTIVO) -->
+        <tr id="start-screen">
+            <td align="center" bgcolor="#00bcd4" valign="middle" height="400">
+                <font face="sans-serif" size="6"><b>ECO-CLASIFICADOR</b></font><br>
+                <font face="sans-serif" size="2" color="#e0f2f1"><b>ESTILO FRUTIGER AERO</b></font><br><br>
+                <font face="sans-serif" size="3">
+                    Clasifica los residuos en sus esferas antes de que acabe el tiempo.<br><br>
+                    ¡Usa las flechas Izquierda y Derecha!<br><br>
+                </font>
+                <button onclick="startGame()" style="background: linear-gradient(#b2ff59, #64dd17); color: #1b5e20; border: 2px solid white; padding: 12px 35px; font-size: 16px; font-weight: bold; border-radius: 25px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+                    COMENZAR GAME
+                </button>
+            </td>
+        </tr>
+
+        <!-- ESCENARIO DE JUEGO (BURBUJAS EN MOVIMIENTO CONTINUO) -->
+        <tr id="game-stage" style="display: none;">
+            <td height="400" valign="top" style="position: relative; overflow: hidden; background: linear-gradient(#00bcd4, #81c784);">
+                
+                <!-- BURBUJAS FRUTIGER AERO EN MOVIMIENTO VERTICAL -->
+                <marquee direction="up" scrollamount="3" style="position: absolute; width: 100%; height: 100%; z-index: 1;">
+                    <font size="6" color="#ffffff" style="opacity: 0.4;">🫧 &nbsp; &nbsp; &nbsp; &nbsp; 🫧 &nbsp; &nbsp; &nbsp; &nbsp; 🫧</font><br><br><br>
+                    <font size="4" color="#ffffff" style="opacity: 0.3;">&nbsp; &nbsp; 🫧 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 🫧</font>
+                </marquee>
+
+                <!-- OBJETO QUE CAE -->
+                <div id="garbage" style="position: absolute; width: 60px; height: 60px; left: 170px; top: 20px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); z-index: 3;">
+                    🍾
+                </div>
+            </td>
+        </tr>
+
+        <!-- CONTENEDORES DE RECICLAJE ESTILO GEL (GLOSSY) -->
+        <tr>
+            <td height="120" bgcolor="#ffffff" valign="middle" style="border-radius: 0px 0px 20px 20px;">
+                <table width="100%" cellspacing="10" cellpadding="0" align="center">
+                    <tr>
+                        <td width="33%" align="center" bgcolor="#fbc02d" height="90" style="border-radius: 15px; border: 2px solid #f57f17; box-shadow: inset 0 4px 4px #fff;">
+                            <font face="sans-serif" size="2" color="white"><b>PLÁSTICO</b></font><br>
+                            <font size="5">🟨</font>
+                        </td>
+                        <td width="33%" align="center" bgcolor="#1565c0" height="90" style="border-radius: 15px; border: 2px solid #01579b; box-shadow: inset 0 4px 4px #fff;">
+                            <font face="sans-serif" size="2" color="white"><b>PAPEL</b></font><br>
+                            <font size="5">🟦</font>
+                        </td>
+                        <td width="33%" align="center" bgcolor="#2e7d32" height="90" style="border-radius: 15px; border: 2px solid #1b5e20; box-shadow: inset 0 4px 4px #fff;">
+                            <font face="sans-serif" size="2" color="white"><b>VIDRIO</b></font><br>
+                            <font size="5">🟩</font>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- PANTALLA DE FIN DE JUEGO OVERLAY -->
+    <div id="end-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20; text-align: center; padding-top: 150px;">
+        <font face="sans-serif" size="6"><b id="end-title">¡Has Ganado!</b></font><br><br>
+        <font face="sans-serif" size="4" color="#e0e0e0"><p id="end-message">Misión cumplida.</p></font><br><br>
+        <button onclick="location.reload()" style="background: #2e7d32; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 20px; cursor: pointer;">
+            JUGAR DE NUEVO
+        </button>
+    </div>
+
+    <!-- CONTROLADORES INTERNOS (LÓGICA AUTOMÁTICA) -->
+    <script>
+        var garbage = document.getElementById('garbage');
+        var scoreDisplay = document.getElementById('score');
+        var timerDisplay = document.getElementById('timer');
+        var startScreen = document.getElementById('start-screen');
+        var gameStage = document.getElementById('game-stage');
+        var endScreen = document.getElementById('end-screen');
+        var endTitle = document.getElementById('end-title');
+        var endMessage = document.getElementById('end-message');
+
+        var score = 0;
+        var timeLeft = 60;
+        var posX = 170; 
+        var posY = 20;  
+        var speed = 3.5;  
+        var gameActive = false; 
+        var timerInterval;
+        var animationFrameId;
+
+        var items = [
+            { name: '🥤', type: 'plastico', bg: '#fffde7' },
+            { name: '🧃', type: 'plastico', bg: '#fffde7' },
+            { name: '🍾', type: 'vidrio', bg: '#e8f5e9' },
+            { name: '🏺', type: 'vidrio', bg: '#e8f5e9' },
+            { name: '📦', type: 'papel', bg: '#e3f2fd' },
+            { name: '📰', type: 'papel', bg: '#e3f2fd' }
+        ];
+
+        var randomIndex = Math.floor(Math.random() * items.length);
+        var currentItem = items[randomIndex];
+
+        function updateItemVisual() {
+            garbage.innerHTML = currentItem.name;
+            garbage.style.backgroundColor = currentItem.bg;
+            garbage.style.left = posX + 'px';
+            garbage.style.top = posY + 'px';
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+            posY += speed;
+            
+            if (posY >= 340) {
+                checkCollision();
+                if (gameActive) resetItem();
+            }
+            garbage.style.top = posY + 'px';
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', function(e) {
+            if (!gameActive) return;
+            if (e.key === 'ArrowLeft' && posX > 20) {
+                posX -= 50;
+            } else if (e.key === 'ArrowRight' && posX < 300) {
+                posX += 50;
+            }
+            garbage.style.left = posX + 'px';
+        });
+
+        function checkCollision() {
+            var playerChoice = '';
+            if (posX < 120) {
+                playerChoice = 'plastico';
+            } else if (posX >= 120 && posX < 240) {
+                playerChoice = 'papel';
+            } else {
+                playerChoice = 'vidrio';
+            }
+
+            if (playerChoice === currentItem.type) {
+                score += 10;
+                speed += 0.25;
+            } else {
+                score = score - 5;
+                if (score < 0) score = 0;
+            }
+            scoreDisplay.textContent = score;
+
+            if (score >= 100) {
+                endGame(true);
+            }
+        }
+
+        function resetItem() {
+            posY = 20;
+            posX = 170;
+            var randomIndex = Math.floor(Math.random() * items.length);
+            currentItem = items[randomIndex];
+            updateItemVisual();
+        }
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameStage.style.display = 'table-row';
+            gameActive = true;
+            resetItem();
+            startTimer();
+            gameLoop();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                if (!gameActive) return;
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function endGame(isWin) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            cancelAnimationFrame(animationFrameId);
+            endScreen.style.display = 'block';
+            if (isWin) {
+                endTitle.textContent = "¡Misión Cumplida! 🎉";
+                endMessage.textContent = "¡Lograste los 100 puntos a tiempo! El ecosistema está a salvo. 🌍💧";
+            } else {
+                endTitle.textContent = "¡Tiempo Agotado! ⏱️";
+                endMessage.textContent = "Te quedaste con " + score + " puntos. ¡Inténtalo de nuevo!";
+            }
+        }
+        updateItemVisual();
+    </script>
+</body>
+</html>
+<!DOCTYP
